@@ -121,3 +121,42 @@ body {
 .animate-border-beam {
   animation: border-beam var(--duration) infinite linear;
 }
+
+/* Portal (GPU-less CSS fallback) — explicit keyframes so the swirl always animates */
+@keyframes portal-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes portal-twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+.portal-swirl-a {
+  animation: portal-spin 16s linear infinite;
+}
+
+.portal-swirl-b {
+  animation: portal-spin 26s linear infinite reverse;
+}
+
+.portal-spark {
+  animation: portal-twinkle 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portal-swirl-a,
+  .portal-swirl-b,
+  .portal-spark {
+    animation: none;
+  }
+}
