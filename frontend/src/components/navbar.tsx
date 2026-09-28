@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/ui/button";
 import { Badge } from "@/ui/badge";
 import { GithubIcon } from "@/components/ui/icons";
-import { Menu, X, Terminal, ExternalLink, Sparkles } from "lucide-react";
+import { Menu, X, Terminal, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Navbar = () => {
@@ -40,7 +40,7 @@ export const Navbar = () => {
                 ContextPortal
               </span>
               <Badge variant="glow" className="text-[10px] px-1.5 py-0 h-4">
-                v0.1.0
+                v0.3.0
               </Badge>
             </div>
           </div>
@@ -61,7 +61,7 @@ export const Navbar = () => {
             Why
           </a>
           <a
-            href="#the-solution"
+            href="#how"
             className="hover:text-white transition-colors duration-150 hover:underline underline-offset-8"
           >
             How it Works
@@ -129,7 +129,7 @@ export const Navbar = () => {
             Why
           </a>
           <a
-            href="#the-solution"
+            href="#how"
             onClick={() => setMobileMenuOpen(false)}
             className="text-sm font-medium text-zinc-300 hover:text-white"
           >

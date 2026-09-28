@@ -1,34 +1,24 @@
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { HeroSection } from "@/components/sections/hero";
-import { DemoVideoSection } from "@/components/sections/demo-video";
-import { ThePainSection } from "@/components/sections/the-pain";
+import { ProblemSection } from "@/components/sections/problem";
+import { SolutionSection } from "@/components/sections/solution";
 import { TokenCalculatorSection } from "@/components/sections/token-calculator";
-import { TheSolutionSection } from "@/components/sections/the-solution";
-import { HowItWorksSection } from "@/components/sections/how-it-works";
-import { DialogueSection } from "@/components/sections/dialogue";
-import { PrivacySection } from "@/components/sections/privacy";
-import { NotABrowserSection } from "@/components/sections/not-a-browser";
-import { McpRevealSection } from "@/components/sections/mcp-reveal";
-import { OpenSourceSection } from "@/components/sections/open-source";
+import { ConnectSection } from "@/components/sections/connect";
+import { TrustSection } from "@/components/sections/trust";
 import { FinalCtaSection } from "@/components/sections/final-cta";
 
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-[#09090b] text-[#fafafa]">
       <Navbar />
-      <main className="flex-1 flex flex-col">
+      <main className="flex flex-1 flex-col">
         <HeroSection />
-        <DemoVideoSection />
-        <ThePainSection />
+        <ProblemSection />
+        <SolutionSection />
         <TokenCalculatorSection />
-        <TheSolutionSection />
-        <HowItWorksSection />
-        <DialogueSection />
-        <PrivacySection />
-        <NotABrowserSection />
-        <McpRevealSection />
-        <OpenSourceSection />
+        <ConnectSection />
+        <TrustSection />
         <FinalCtaSection />
       </main>
       <Footer />
