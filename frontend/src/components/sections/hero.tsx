@@ -57,12 +57,12 @@ export const HeroSection = () => {
   };
 
   return (
-    <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden border-b border-zinc-900/60 pt-24 pb-20">
+    <section className="relative isolate flex min-h-screen flex-col items-center justify-center overflow-hidden border-b border-zinc-900/60 pt-24 pb-20">
       {/* Ambient gradient wash */}
       <div className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.10),transparent_55%)]" />
 
-      {/* WebGL portal behind the wordmark */}
-      <div className="pointer-events-none absolute left-1/2 top-[36%] -z-10 h-[720px] w-[720px] -translate-x-1/2 -translate-y-1/2 [mask-image:radial-gradient(circle,black_70%,transparent_92%)]">
+      {/* CSS portal behind the wordmark */}
+      <div className="pointer-events-none absolute left-1/2 top-[33%] -z-10 h-[660px] w-[660px] -translate-x-1/2 -translate-y-1/2 [mask-image:radial-gradient(circle,black_72%,transparent_92%)]">
         <PortalCanvas className="h-full w-full" />
       </div>
 
