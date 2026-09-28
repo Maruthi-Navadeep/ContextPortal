@@ -49,11 +49,14 @@ interface ModelPricing {
   outputPerMillion: number;
 }
 
+// Approximate published list prices (USD per 1M tokens). Verify current rates
+// with each provider — pricing changes over time.
 const MODELS: ModelPricing[] = [
-  { name: "GPT-5.6 Sol", inputPerMillion: 5.0, outputPerMillion: 30.0 },
-  { name: "Claude Opus 5", inputPerMillion: 5.0, outputPerMillion: 25.0 },
-  { name: "Claude Sonnet 5", inputPerMillion: 3.0, outputPerMillion: 15.0 },
-  { name: "Claude Haiku 4.5", inputPerMillion: 1.0, outputPerMillion: 5.0 },
+  { name: "Claude Opus 4", inputPerMillion: 15.0, outputPerMillion: 75.0 },
+  { name: "Claude Sonnet 4", inputPerMillion: 3.0, outputPerMillion: 15.0 },
+  { name: "Claude Haiku 3.5", inputPerMillion: 0.8, outputPerMillion: 4.0 },
+  { name: "GPT-4o", inputPerMillion: 2.5, outputPerMillion: 10.0 },
+  { name: "GPT-4o mini", inputPerMillion: 0.15, outputPerMillion: 0.6 },
 ];
 
 function calculateMetrics(
@@ -349,6 +352,10 @@ export const TokenCalculatorSection = () => {
           <p className="mt-4 text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
             How many tokens, dollars, and minutes are you burning with screenshots and browser agents?
             Adjust the sliders and see for yourself.
+          </p>
+          <p className="mt-3 text-xs text-zinc-600 max-w-2xl mx-auto">
+            Illustrative estimates. Token math and model prices are approximate — verify current
+            rates with your provider. ContextPortal itself does not count or bill tokens.
           </p>
         </div>
 
