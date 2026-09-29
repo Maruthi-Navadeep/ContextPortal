@@ -62,7 +62,7 @@ export const HeroSection = () => {
       <div className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.10),transparent_55%)]" />
 
       {/* CSS portal behind the wordmark */}
-      <div className="pointer-events-none absolute left-1/2 top-[33%] -z-10 h-[660px] w-[660px] -translate-x-1/2 -translate-y-1/2 [mask-image:radial-gradient(circle,black_72%,transparent_92%)]">
+      <div className="pointer-events-none absolute left-1/2 top-[33%] -z-10 h-[660px] w-[660px] -translate-x-1/2 -translate-y-1/2 [mask-image:radial-gradient(circle,black_78%,transparent_98%)]">
         <PortalCanvas className="h-full w-full" />
       </div>
 
