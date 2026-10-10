@@ -19,23 +19,52 @@ class ContextResult(BaseModel):
     authenticated: bool
 
 
-async def extract_markdown(html: str) -> tuple[str, str]:
-    """Extracts main content from HTML and converts it to Markdown. Returns (markdown, title)."""
+# ── constants ─────────────────────────────────────────────────────────────────
+
+USER_AGENT = "ContextPortal/0.1.0 (+https://github.com/NavadeepDj/ContextPortal)"
+
+# 1 retry (initial attempt + 1 backoff) for genuine server-overload signals only.
+# Timeouts fall through to the browser immediately — retrying a timeout just adds
+# latency before the Playwright fallback, which is the right tool for slow/auth-gated sites.
+# See decisions/ADR-004-http-retry-strategy.md for the full rationale.
+MAX_HTTP_RETRIES = 2
+RETRY_ON_STATUS = {429, 503}
+MIN_CONTENT_CHARS = 100
+
+# Patterns in raw HTML that indicate a JavaScript-only SPA shell with no real content.
+# Checked before extraction to catch shells whose error/loading text passes the char threshold.
+SPA_MARKERS = [
+    'id="root"',
+    "id='root'",
+    'id="app"',
+    "id='app'",
+    "you need to enable javascript",
+    "please enable javascript",
+    "this site requires javascript",
+]
+
+
+# ── shared extraction helper ───────────────────────────────────────────────────
+
+def _extract_content(html: str) -> tuple[str, str]:
+    """Single source of truth: HTML → (markdown, title)."""
     doc = Document(html)
     title = doc.title()
     main_html = doc.summary()
     soup = BeautifulSoup(main_html, "lxml")
-    md_content = markdownify.markdownify(
-        str(soup), heading_style="ATX", strip=["script", "style"]
+    md = markdownify.markdownify(
+        str(soup), heading_style="ATX", strip=["script", "style", "img"]
     )
-    md_content = "\n".join(
-        [line for line in md_content.splitlines() if line.strip() or line == ""]
-    )
-    return md_content.strip(), title
+    md = "\n".join([line for line in md.splitlines() if line.strip() or line == ""])
+    return md.strip(), title
 
 
-USER_AGENT = "ContextPortal/0.1.0 (+https://github.com/NavadeepDj/ContextPortal)"
+async def extract_markdown(html: str) -> tuple[str, str]:
+    """Async shim kept for backwards compatibility — delegates to _extract_content."""
+    return _extract_content(html)
 
+
+# ── HTTP fetch ────────────────────────────────────────────────────────────────
 
 async def fetch_public(url: str) -> ContextResult | None:
     """Attempts to fetch the URL normally. Returns ContextResult if successful and not blocked, else None."""
@@ -44,50 +73,94 @@ async def fetch_public(url: str) -> ContextResult | None:
         async with httpx.AsyncClient(
             headers=headers, follow_redirects=True, timeout=10.0
         ) as client:
-            response = await client.get(url)
+            for attempt in range(MAX_HTTP_RETRIES):
+                try:
+                    response = await client.get(url)
+                except httpx.TimeoutException:
+                    print("Request timed out — falling back to browser immediately.")
+                    return None
+                except Exception as e:
+                    print(f"Public fetch failed: {e}")
+                    return None
 
-            if response.status_code in (401, 403):
-                print("Public fetch hit 401/403.")
-                return None
+                if response.status_code in (401, 403):
+                    print("Public fetch hit 401/403.")
+                    return None
 
-            response.raise_for_status()
+                if response.status_code in RETRY_ON_STATUS:
+                    if attempt < MAX_HTTP_RETRIES - 1:
+                        print(
+                            f"Got {response.status_code}, retrying in {2 ** attempt}s "
+                            f"(attempt {attempt + 1}/{MAX_HTTP_RETRIES})..."
+                        )
+                        await asyncio.sleep(2**attempt)
+                        continue
+                    print(f"Got {response.status_code} after {MAX_HTTP_RETRIES} attempts.")
+                    return None
 
-            final_url = str(response.url).lower()
-            if "login" in final_url or "signin" in final_url or "auth" in final_url:
-                print(f"Public fetch redirected to auth page: {final_url}")
-                return None
+                response.raise_for_status()
 
-            content_type = response.headers.get("content-type", "")
-            if "text/html" not in content_type:
+                final_url = str(response.url).lower()
+                if "login" in final_url or "signin" in final_url or "auth" in final_url:
+                    print(f"Public fetch redirected to auth page: {final_url}")
+                    return None
+
+                content_type = response.headers.get("content-type", "")
+
+                if "application/pdf" in content_type:
+                    return ContextResult(
+                        url=final_url,
+                        title=None,
+                        content=(
+                            "[PDF file: direct text extraction is not supported. "
+                            "Download the file and use a dedicated PDF reader.]"
+                        ),
+                        content_type=content_type,
+                        retrieval_method="http",
+                        authenticated=False,
+                    )
+
+                if "text/html" not in content_type:
+                    return ContextResult(
+                        url=final_url,
+                        title=None,
+                        content=response.text,
+                        content_type=content_type,
+                        retrieval_method="http",
+                        authenticated=False,
+                    )
+
+                # Detect SPA shells before running the full extraction pipeline
+                raw_lower = response.text.lower()
+                if any(marker in raw_lower for marker in SPA_MARKERS):
+                    print("SPA shell markers detected in HTML.")
+                    return None
+
+                md, title = await extract_markdown(response.text)
+
+                if len(md.strip()) < MIN_CONTENT_CHARS:
+                    print(
+                        "Public fetch returned virtually empty content (likely an SPA shell)."
+                    )
+                    return None
+
                 return ContextResult(
                     url=final_url,
-                    title=None,
-                    content=response.text,
-                    content_type=content_type,
+                    title=title,
+                    content=md,
+                    content_type="text/markdown",
                     retrieval_method="http",
                     authenticated=False,
                 )
 
-            md, title = await extract_markdown(response.text)
-
-            if len(md.strip()) < 100:
-                print(
-                    "Public fetch returned virtually empty content (likely an SPA shell)."
-                )
-                return None
-
-            return ContextResult(
-                url=final_url,
-                title=title,
-                content=md,
-                content_type="text/markdown",
-                retrieval_method="http",
-                authenticated=False,
-            )
     except Exception as e:
         print(f"Public fetch failed: {e}")
         return None
 
+    return None
+
+
+# ── browser auth helpers ──────────────────────────────────────────────────────
 
 def _is_on_target_content(page: Page, target_url: str) -> bool:
     """Check if the page has navigated to (or near) the target URL's domain/path."""
@@ -212,22 +285,12 @@ def _fetch_authenticated_sync(url: str) -> ContextResult:
             html_content = page.content()
             final_url = page.url
 
-            # Extract markdown synchronously here since we're in a thread
-            doc = Document(html_content)
-            title = doc.title()
-            main_html = doc.summary()
-            soup = BeautifulSoup(main_html, "lxml")
-            md_content = markdownify.markdownify(
-                str(soup), heading_style="ATX", strip=["script", "style"]
-            )
-            md_content = "\n".join(
-                [line for line in md_content.splitlines() if line.strip() or line == ""]
-            )
+            md_content, title = _extract_content(html_content)
 
             return ContextResult(
                 url=final_url,
                 title=title,
-                content=md_content.strip(),
+                content=md_content,
                 content_type="text/markdown",
                 retrieval_method="browser",
                 authenticated=True,
