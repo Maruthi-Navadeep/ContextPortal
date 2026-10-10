@@ -87,6 +87,22 @@ def run_fetch(url: str) -> None:
     asyncio.run(_do_fetch())
 
 
+def run_search(query: str, engine: str = "google", num_results: int = 5) -> None:
+    """Search using SerpApi directly from the CLI."""
+    from app.core.search import format_results_as_markdown, search
+
+    print(f"Searching for: {query} (engine: {engine})\n")
+    try:
+        response = search(query, engine=engine, num_results=num_results)
+        print(format_results_as_markdown(response))
+    except ValueError as e:
+        print(f"Configuration error: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error executing search: {e}")
+        sys.exit(1)
+
+
 def run_setup(client_filter: str = "all", dry_run: bool = False) -> None:
     """Auto-configure MCP clients to connect to ContextPortal."""
     from app.core.setup import get_supported_clients, inject_mcp_config
@@ -169,6 +185,25 @@ def main() -> None:
     )
     fetch_parser.add_argument("url", type=str, help="The URL to fetch.")
 
+    # Search Command (SerpApi)
+    search_parser = subparsers.add_parser(
+        "search", help="Search the web using SerpApi directly from the CLI."
+    )
+    search_parser.add_argument("query", type=str, help="The search query.")
+    search_parser.add_argument(
+        "--engine",
+        type=str,
+        default="google",
+        help="SerpApi engine to use (default: google).",
+    )
+    search_parser.add_argument(
+        "--num",
+        dest="num_results",
+        type=int,
+        default=5,
+        help="Number of results to return (default: 5).",
+    )
+
     # Setup Command (Release 0.2)
     setup_parser = subparsers.add_parser(
         "setup",
@@ -210,6 +245,8 @@ def main() -> None:
         run_login(args.url_flag or args.url)
     elif args.command == "fetch":
         run_fetch(args.url)
+    elif args.command == "search":
+        run_search(args.query, engine=args.engine, num_results=args.num_results)
     elif args.command == "setup":
         run_setup(client_filter=args.client, dry_run=args.dry_run)
     elif args.command in ("doctor", "status"):
