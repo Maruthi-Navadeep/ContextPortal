@@ -1,6 +1,9 @@
+import asyncio
+
 from mcp.server.mcpserver import MCPServer
 
 from app.core.retriever import get_context
+from app.core.search import format_results_as_markdown, search
 from app.core.security import validate_url_policy
 
 # Initialize the MCP Server
@@ -40,6 +43,39 @@ async def fetch_context(url: str) -> str:
         return formatted_response
     except Exception as e:
         return f"Error retrieving context: {str(e)}"
+
+
+@mcp.tool()
+async def search_context(
+    query: str,
+    engine: str = "google",
+    num_results: int = 5,
+) -> str:
+    """Search the web using SerpApi and return structured results.
+
+    Use this tool to discover relevant URLs and information before
+    fetching full page content with fetch_context.
+
+    Supported engines: google, google_scholar, google_news, google_maps,
+    google_shopping, google_jobs, youtube, bing, and 100+ more.
+
+    Example workflow:
+    1. search_context("Handshake AI projects") -> get URLs
+    2. fetch_context("https://app.joinhandshake.com/...") -> get full page content
+    """
+    if not query:
+        raise ValueError("query is required")
+
+    if not query.strip():
+        return "Error: Search query cannot be empty."
+
+    try:
+        response = await asyncio.to_thread(search, query, engine, num_results)
+        return format_results_as_markdown(response)
+    except ValueError as e:
+        return f"Error: {str(e)}"
+    except Exception as e:
+        return f"Error performing search: {str(e)}"
 
 
 def main() -> None:

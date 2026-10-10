@@ -221,12 +221,34 @@ Your agent calls ContextPortal → ContextPortal retrieves the page through your
                        Back to Agent
 ```
 
-ContextPortal operates a **two-tier retrieval engine**:
+ContextPortal operates a **two-tier retrieval engine** alongside **live web discovery via SerpApi**:
+
+### 🛠️ Agent MCP Tools
+
+| Tool | Purpose | Description |
+|------|---------|-------------|
+| 🔍 `search_context` | **Live Web Discovery** (powered by SerpApi) | Searches Google, Scholar, News, Maps, Jobs, and 100+ engines via SerpApi. Returns structured Markdown with links and direct answer boxes. |
+| 📄 `fetch_context` | **Deep Content Retrieval** | Fetches public or login-protected pages (Jira, Confluence, Handshake, private dashboards) using local authenticated browser sessions. |
+
+#### 🔄 Autonomous Search & Retrieve Workflow
+
+```
+User: "Get the latest status on my Handshake AI applications."
+  │
+  ├── 1. Agent calls search_context("Handshake student applications")
+  │      └── SerpApi returns structured search results and direct portal link
+  │
+  ├── 2. Agent calls fetch_context("https://app.joinhandshake.com/stu/experiences")
+  │      └── ContextPortal uses your local authenticated Chrome session
+  │
+  └── 3. Clean Markdown delivered to agent with ZERO leaked credentials!
+```
 
 | Tier | When | How | Speed |
 |------|------|-----|-------|
-| **HTTP** | Public pages, docs, blogs | Lightweight `httpx` request | ⚡ Fast |
-| **Browser** | Login-protected pages | Playwright with your local Chrome session | 🔐 Authenticated |
+| **SerpApi Search** | Discovery & finding URLs | Live search via 100+ SerpApi engines | ⚡ Fast |
+| **HTTP Fetch** | Public pages, docs, blogs | Lightweight `httpx` request | ⚡ Fast |
+| **Browser Engine** | Login-protected pages | Playwright with your local Chrome session | 🔐 Authenticated |
 
 The agent doesn't know or care which tier was used. It just gets content.
 
@@ -263,18 +285,22 @@ contextportal <command>
 
 | Command | What it does |
 |---------|-------------|
-| `login` | Open Chrome to authenticate with your private sites |
+| `search <query>` | Search the web using SerpApi directly from your terminal |
 | `fetch <url>` | Test-fetch a URL from the terminal (great for debugging) |
+| `login` | Open Chrome to authenticate with your private sites |
 | `mcp` | Start the MCP server (your AI agent runs this automatically) |
 
 ### Examples
 
 ```bash
-# Log into your enterprise sites
-contextportal login
+# Search the web with SerpApi
+contextportal search "Handshake AI Fellowship"
 
 # Test that a protected page works
 contextportal fetch https://internal.company.com/docs
+
+# Log into your enterprise sites
+contextportal login
 
 # Start the MCP server (usually done by your AI agent)
 contextportal mcp

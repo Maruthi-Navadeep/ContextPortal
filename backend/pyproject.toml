@@ -1,6 +1,6 @@
 [project]
 name = "contextportal"
-version = "0.3.0"
+version = "0.4.0"
 description = "The authenticated fetch layer for AI agents."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -36,6 +36,7 @@ dependencies = [
     "markdownify>=1.2.3",
     "mcp[cli]>=2.1.1",
     "packaging>=23.0",
+    "serpapi>=1.1.2",
 ]
 
 [project.urls]
@@ -83,6 +84,7 @@ module = [
     "readability.*",
     "markdownify.*",
     "mcp.*",
+    "serpapi.*",
 ]
 ignore_missing_imports = true
 
