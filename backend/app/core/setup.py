@@ -70,6 +70,66 @@ def get_supported_clients() -> list[ClientConfig]:
         )
     )
 
+    # 4. Claude Code (CLI + VS Code / JetBrains extension)
+    # Global user settings at ~/.claude/settings.json — works for all Claude Code surfaces.
+    claude_code_path = home / ".claude" / "settings.json"
+    clients.append(
+        ClientConfig(
+            name="claude-code",
+            display_name="Claude Code",
+            config_path=claude_code_path,
+        )
+    )
+
+    # 5. Windsurf (Codeium)
+    if system == "Windows":
+        windsurf_path = (
+            Path(os.environ.get("APPDATA", str(home / "AppData" / "Roaming")))
+            / "Windsurf"
+            / "mcp.json"
+        )
+    elif system == "Darwin":
+        windsurf_path = home / "Library" / "Application Support" / "Windsurf" / "mcp.json"
+    else:
+        windsurf_path = home / ".config" / "Windsurf" / "mcp.json"
+    clients.append(
+        ClientConfig(name="windsurf", display_name="Windsurf", config_path=windsurf_path)
+    )
+
+    # 6. Cline (VS Code extension — formerly Claude Dev)
+    if system == "Windows":
+        vscode_storage = (
+            Path(os.environ.get("APPDATA", str(home / "AppData" / "Roaming")))
+            / "Code" / "User" / "globalStorage"
+        )
+    elif system == "Darwin":
+        vscode_storage = home / "Library" / "Application Support" / "Code" / "User" / "globalStorage"
+    else:
+        vscode_storage = home / ".config" / "Code" / "User" / "globalStorage"
+
+    cline_path = vscode_storage / "saoudrizwan.claude-dev" / "settings" / "cline_mcp_settings.json"
+    clients.append(
+        ClientConfig(name="cline", display_name="Cline (VS Code)", config_path=cline_path)
+    )
+
+    # 7. Roo Code (VS Code extension — Cline fork)
+    roo_path = vscode_storage / "rooveterinaryinc.roo-cline" / "settings" / "cline_mcp_settings.json"
+    clients.append(
+        ClientConfig(name="roo-code", display_name="Roo Code (VS Code)", config_path=roo_path)
+    )
+
+    # 8. Amazon Q Developer
+    amazon_q_path = home / ".aws" / "amazonq" / "mcp.json"
+    clients.append(
+        ClientConfig(name="amazon-q", display_name="Amazon Q Developer", config_path=amazon_q_path)
+    )
+
+    # 9. Gemini CLI
+    gemini_path = home / ".gemini" / "settings.json"
+    clients.append(
+        ClientConfig(name="gemini-cli", display_name="Gemini CLI", config_path=gemini_path)
+    )
+
     return clients
 
 
