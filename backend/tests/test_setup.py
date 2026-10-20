@@ -13,6 +13,12 @@ def test_get_supported_clients():
     assert "claude" in names
     assert "cursor" in names
     assert "antigravity" in names
+    assert "claude-code" in names
+    assert "windsurf" in names
+    assert "cline" in names
+    assert "roo-code" in names
+    assert "amazon-q" in names
+    assert "gemini-cli" in names
 
 
 def test_inject_mcp_config_fresh_file(tmp_path):

@@ -211,7 +211,7 @@ def main() -> None:
     )
     setup_parser.add_argument(
         "--client",
-        choices=["all", "claude", "cursor", "antigravity"],
+        choices=["all", "claude", "cursor", "antigravity", "claude-code", "windsurf", "cline", "roo-code", "amazon-q", "gemini-cli"],
         default="all",
         help="Specific AI client to configure (default: all)",
     )
