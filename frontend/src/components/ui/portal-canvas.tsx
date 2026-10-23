@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -31,7 +31,7 @@ export const PortalCanvas = ({ className }: { className?: string }) => {
       if (/swiftshader|llvmpipe|software|basic render|microsoft/i.test(r)) return;
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       if (reduced) return; // CSS static-friendly path
-      setMode("webgl");
+      startTransition(() => setMode("webgl"));
     } catch {
       /* stay on CSS */
     }

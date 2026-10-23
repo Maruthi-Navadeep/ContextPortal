@@ -30,7 +30,7 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
   toRef,
   curvature = 0,
   reverse = false,
-  duration = Math.random() * 3 + 4,
+  duration: durationProp,
   delay = 0,
   pathColor = "gray",
   pathWidth = 2,
@@ -43,6 +43,7 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
   endYOffset = 0,
 }) => {
   const id = useId();
+  const [duration] = useState<number>(() => durationProp ?? Math.random() * 3 + 4);
   const [pathD, setPathD] = useState("");
   const [svgDimensions, setSvgDimensions] = useState({ width: 0, height: 0 });
 
