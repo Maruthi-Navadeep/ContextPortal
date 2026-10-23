@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { startTransition, useState, useEffect, useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { Badge } from "@/ui/badge";
 import {
@@ -126,7 +126,7 @@ function useAnimatedCounter(target: number, duration: number = 1200, active: boo
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    if (!active) { setCount(0); return; }
+    if (!active) { startTransition(() => setCount(0)); return; }
     let startTime: number | null = null;
     let animationFrame: number;
 
